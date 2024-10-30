@@ -1,5 +1,4 @@
 package CountingSort;
-// ParallelCountingSort.java
 public class ParallelCountingSort {
     private int[] arr;
     private int range, numThreads;

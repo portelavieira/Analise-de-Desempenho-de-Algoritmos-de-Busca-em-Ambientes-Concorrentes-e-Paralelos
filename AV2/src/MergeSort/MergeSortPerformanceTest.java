@@ -1,17 +1,17 @@
-package InsertionSort;
+package MergeSort;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
-public class InsertionSortPerformanceTest {
+public class MergeSortPerformanceTest {
 
     public static void main(String[] args) {
         int[] dataSizes = {1000, 5000, 10000, 50000, 100000}; // Diferentes tamanhos de array para testes
         int numThreads[] = {1, 2, 4, 8}; // Diferentes números de threads para teste paralelo
         int samples = 5; // Número de amostras por configuração
 
-        try (FileWriter writer = new FileWriter("insertion_sort_performance_results.csv")) {
+        try (FileWriter writer = new FileWriter("merge_sort_performance_results.csv")) {
             writer.write("Data Size,Threads,Sample,Time (ms),Mode\n");
 
             for (int dataSize : dataSizes) {
@@ -21,7 +21,7 @@ public class InsertionSortPerformanceTest {
                 for (int i = 0; i < samples; i++) {
                     int[] arrayCopy = Arrays.copyOf(array, array.length);
                     long startTime = System.currentTimeMillis();
-                    InsertionSort.insertionSort(arrayCopy); // Executa Insertion Sort Serial
+                    MergeSort.mergeSort(arrayCopy); // Executa Merge Sort Serial
                     long endTime = System.currentTimeMillis();
                     long duration = endTime - startTime;
 
@@ -34,8 +34,8 @@ public class InsertionSortPerformanceTest {
                         int[] arrayCopy = Arrays.copyOf(array, array.length);
                         long startTime = System.currentTimeMillis();
 
-                        ParallelInsertionSort insertionSortTask = new ParallelInsertionSort(arrayCopy, threadCount);
-                        insertionSortTask.insertionSort();
+                        ParallelMergeSort mergeSortTask = new ParallelMergeSort(arrayCopy, threadCount);
+                        mergeSortTask.mergeSort();
 
                         long endTime = System.currentTimeMillis();
                         long duration = endTime - startTime;

@@ -1,5 +1,4 @@
 package InsertionSort;
-// ParallelInsertionSort.java
 public class ParallelInsertionSort {
     private int[] arr;
     private int numThreads;
