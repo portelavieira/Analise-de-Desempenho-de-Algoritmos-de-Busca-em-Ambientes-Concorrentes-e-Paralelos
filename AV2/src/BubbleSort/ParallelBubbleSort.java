@@ -82,15 +82,4 @@ public class ParallelBubbleSort {
             indices[minIndex]++;
         }
     }
-
-    // Função principal para testar o Bubble Sort paralelo
-    public static void main(String[] args) throws InterruptedException {
-        int[] array = {14, 7, 3, 12, 9, 11, 6, 2, 15, 5, 10, 1, 4, 8, 13};
-        
-        System.out.println("Array original: " + Arrays.toString(array));
-        
-        parallelBubbleSort(array);
-        
-        System.out.println("Array ordenado: " + Arrays.toString(array));
-    }
 }

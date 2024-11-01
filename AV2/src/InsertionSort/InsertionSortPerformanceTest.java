@@ -1,51 +1,58 @@
 package InsertionSort;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Random;
 
 public class InsertionSortPerformanceTest {
+
     public static void main(String[] args) {
-        int[] dataSizes = {1000, 5000, 10000, 50000, 100000};
-        int[] numThreads = {1, 2, 4, 8, 16};
+        int[] tamanhosArray = {1000, 5000, 10000, 20000, 50000}; // Tamanhos variados para o array
+        int[] numThreads = {1, 2, 4, 8}; // Diferentes configurações de threads
 
-        try (FileWriter csvWriter = new FileWriter("InsertionSort_resultados.csv")) {
-            csvWriter.append("ArraySize,SerialTime,ParallelTime\n");
+        try (FileWriter writer = new FileWriter("InsertionSort_resultados.csv")) {
+            writer.write("Execucao,Tamanho,Threads,Tempo (ms)\n");
 
-            for (int size : dataSizes) {
-                int[] array = generateArray(size);
-
-                // Teste Serial
-                long serialTime = measureInsertionSortSerial(array.clone());
-                csvWriter.append(size + "," + serialTime + ",");
-
-                // Teste Paralelo (usando diferentes números de threads)
+            for (int tamanho : tamanhosArray) {
                 for (int threads : numThreads) {
-                    long parallelTime = measureInsertionSortParallel(array.clone(), threads);
-                    csvWriter.append(parallelTime + (threads == numThreads[numThreads.length - 1] ? "\n" : ","));
+                    for (int execucao = 1; execucao <= 5; execucao++) {
+                        int[] array = gerarArrayAleatorio(tamanho);
+                        
+                        // Teste Serial
+                        int[] arraySerial = Arrays.copyOf(array, array.length);
+                        long tempoSerial = medirTempoInsertionSortSerial(arraySerial);
+                        writer.write("Serial," + tamanho + ",1," + tempoSerial + "\n");
+                        
+                        // Teste Paralelo
+                        int[] arrayParalelo = Arrays.copyOf(array, array.length);
+                        long tempoParalelo = medirTempoInsertionSortParalelo(arrayParalelo, threads);
+                        writer.write("Paralelo," + tamanho + "," + threads + "," + tempoParalelo + "\n");
+                    }
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Erro ao escrever no arquivo CSV: " + e.getMessage());
         }
     }
 
-    private static int[] generateArray(int size) {
-        int[] array = new int[size];
-        for (int i = 0; i < size; i++) {
-            array[i] = (int) (Math.random() * size);
+    private static int[] gerarArrayAleatorio(int tamanho) {
+        Random random = new Random();
+        int[] array = new int[tamanho];
+        for (int i = 0; i < tamanho; i++) {
+            array[i] = random.nextInt(10000); // Valores aleatórios entre 0 e 9999
         }
         return array;
     }
 
-    private static long measureInsertionSortSerial(int[] array) {
-        long start = System.currentTimeMillis();
+    private static long medirTempoInsertionSortSerial(int[] array) {
+        long inicio = System.currentTimeMillis();
         InsertionSort.sort(array);
-        return System.currentTimeMillis() - start;
+        return System.currentTimeMillis() - inicio;
     }
 
-    private static long measureInsertionSortParallel(int[] array, int threads) {
-        // Paralelização para o Insertion Sort é incomum, mas pode ser simulada aqui como exemplo
-        long start = System.currentTimeMillis();
-        InsertionSortParallel.sort(array, threads);
-        return System.currentTimeMillis() - start;
+    private static long medirTempoInsertionSortParalelo(int[] array, int threads) {
+        long inicio = System.currentTimeMillis();
+        InsertionSortParallel.parallelSort(array, threads);
+        return System.currentTimeMillis() - inicio;
     }
 }

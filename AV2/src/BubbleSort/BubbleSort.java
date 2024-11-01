@@ -1,5 +1,5 @@
 package BubbleSort;
-public class BubbleSortSerial {
+public class BubbleSort {
     public static void bubbleSort(int[] array) {
         int n = array.length;
         boolean swapped;
@@ -14,7 +14,7 @@ public class BubbleSortSerial {
                     swapped = true;
                 }
             }
-            n--; // Reduz o limite do Bubble Sort a cada iteração
+            n--;
         } while (swapped);
     }
 }

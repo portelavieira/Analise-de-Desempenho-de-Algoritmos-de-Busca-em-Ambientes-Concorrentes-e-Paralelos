@@ -1,52 +1,67 @@
 package QuickSort;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.ForkJoinPool;
 
 public class QuickSortPerformanceTest {
+    private static final int[] SIZES = {1000, 5000, 10000, 50000, 100000}; // Tamanhos variados
+    private static final int[] THREAD_COUNTS = {1, 2, 4, 8}; // Diferentes números de threads
+    private static final int SAMPLES = 5; // Amostras para média
+
     public static void main(String[] args) {
-        int[] dataSizes = {1000, 5000, 10000, 50000, 100000};
-        int[] numThreads = {1, 2, 4, 8, 16};
+        String outputFile = "QuickSort_resultados.csv";
 
-        try (FileWriter csvWriter = new FileWriter("QuickSort_resultados.csv")) {
-            csvWriter.append("ArraySize,SerialTime,ParallelTime\n");
+        try (FileWriter writer = new FileWriter(outputFile)) {
+            writer.write("Execucao,Tamanho,Threads,Tempo (ms)\n");
 
-            for (int size : dataSizes) {
-                int[] array = generateArray(size);
+            // Realiza testes de performance para cada algoritmo
+            for (int size : SIZES) {
+                int[] originalArray = generateRandomArray(size);
 
-                // Teste Serial
-                long serialTime = measureQuickSortSerial(array.clone());
-                csvWriter.append(size + "," + serialTime + ",");
+                // Testes seriais
+                for (int i = 0; i < SAMPLES; i++) {
+                    int[] array = Arrays.copyOf(originalArray, originalArray.length);
+                    long time = measureSerial(array);
+                    writer.write("Serial," + size + ",1," + time + "\n");
+                }
 
-                // Teste Paralelo para diferentes números de threads
-                for (int threads : numThreads) {
-                    long parallelTime = measureQuickSortParallel(array.clone(), threads);
-                    csvWriter.append(parallelTime + (threads == numThreads[numThreads.length - 1] ? "\n" : ","));
+                // Testes paralelos
+                for (int threads : THREAD_COUNTS) {
+                    for (int i = 0; i < SAMPLES; i++) {
+                        int[] array = Arrays.copyOf(originalArray, originalArray.length);
+                        long time = measureParallel(array, threads);
+                        writer.write("Parallel," + size + "," + threads + "," + time + "\n");
+                    }
                 }
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static int[] generateArray(int size) {
+    private static int[] generateRandomArray(int size) {
+        Random random = new Random();
         int[] array = new int[size];
         for (int i = 0; i < size; i++) {
-            array[i] = (int) (Math.random() * size);
+            array[i] = random.nextInt(10000); // Valores de exemplo
         }
         return array;
     }
 
-    private static long measureQuickSortSerial(int[] array) {
+    private static long measureSerial(int[] array) {
         long start = System.currentTimeMillis();
-        QuickSort.sort(array);
+        QuickSort.sort(array); // Substituir pelo método serial do algoritmo específico
         return System.currentTimeMillis() - start;
     }
 
-    private static long measureQuickSortParallel(int[] array, int threads) {
+    private static long measureParallel(int[] array, int threads) {
         ForkJoinPool pool = new ForkJoinPool(threads);
         long start = System.currentTimeMillis();
-        pool.invoke(new QuickSortParallel(array, 0, array.length - 1));
+        pool.invoke(new QuickSortParallel(array, 0, array.length - 1)); // Método paralelo
+        pool.shutdown();
         return System.currentTimeMillis() - start;
     }
 }
