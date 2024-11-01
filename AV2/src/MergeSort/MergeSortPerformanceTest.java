@@ -1,44 +1,27 @@
 package MergeSort;
-// MergeSortPerformanceTest.java
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Random;
+import java.util.concurrent.ForkJoinPool;
 
 public class MergeSortPerformanceTest {
-
     public static void main(String[] args) {
-        int[] dataSizes = {1000, 5000, 10000, 50000, 100000}; // Diferentes tamanhos de array para testes
-        int samples = 5; // Número de amostras por configuração
+        int[] dataSizes = {1000, 5000, 10000, 50000, 100000}; // Exemplo de tamanhos de arrays
+        int[] numThreads = {1, 2, 4, 8, 16}; // Variedade de threads para o teste paralelo
 
-        try (FileWriter writer = new FileWriter("MergeSort_resultados.csv")) {
-            writer.write("Data Size,Sample,Time (ms),Mode\n");
+        try (FileWriter csvWriter = new FileWriter("MergeSort_resultados.csv")) {
+            csvWriter.append("ArraySize,SerialTime,ParallelTime\n");
 
-            for (int dataSize : dataSizes) {
-                int[] array = generateRandomArray(dataSize, 1000); // Gera array de teste com valores no intervalo 0-999
+            for (int size : dataSizes) {
+                int[] array = generateArray(size);
 
-                // Teste serial
-                for (int i = 0; i < samples; i++) {
-                    int[] arrayCopy = Arrays.copyOf(array, array.length);
-                    long startTime = System.currentTimeMillis();
-                    MergeSort.mergeSort(arrayCopy); // Executa Merge Sort Serial
-                    long endTime = System.currentTimeMillis();
-                    long duration = endTime - startTime;
-
-                    writer.write(dataSize + "," + (i + 1) + "," + duration + ",Serial\n");
-                }
-
-                // Teste Fork-Join
-                for (int i = 0; i < samples; i++) {
-                    int[] arrayCopy = Arrays.copyOf(array, array.length);
-                    long startTime = System.currentTimeMillis();
-
-                    ParallelMergeSort.mergeSort(arrayCopy); // Executa Merge Sort com Fork-Join
-
-                    long endTime = System.currentTimeMillis();
-                    long duration = endTime - startTime;
-
-                    writer.write(dataSize + "," + (i + 1) + "," + duration + ",Paralelo\n");
+                // Teste Serial
+                long serialTime = measureMergeSortSerial(array.clone());
+                csvWriter.append(size + "," + serialTime + ",");
+                
+                // Teste Paralelo para diferentes números de threads
+                for (int threads : numThreads) {
+                    long parallelTime = measureMergeSortParallel(array.clone(), threads);
+                    csvWriter.append(parallelTime + (threads == numThreads[numThreads.length - 1] ? "\n" : ","));
                 }
             }
         } catch (IOException e) {
@@ -46,13 +29,24 @@ public class MergeSortPerformanceTest {
         }
     }
 
-    // Gera um array de inteiros aleatórios no intervalo [0, range)
-    private static int[] generateRandomArray(int size, int range) {
-        Random random = new Random();
+    private static int[] generateArray(int size) {
         int[] array = new int[size];
         for (int i = 0; i < size; i++) {
-            array[i] = random.nextInt(range); // Inteiros aleatórios de 0 até (range - 1)
+            array[i] = (int) (Math.random() * size);
         }
         return array;
+    }
+
+    private static long measureMergeSortSerial(int[] array) {
+        long start = System.currentTimeMillis();
+        MergeSort.sort(array);
+        return System.currentTimeMillis() - start;
+    }
+
+    private static long measureMergeSortParallel(int[] array, int threads) {
+        ForkJoinPool pool = new ForkJoinPool(threads);
+        long start = System.currentTimeMillis();
+        pool.invoke(new MergeSortParallel(array, 0, array.length - 1));
+        return System.currentTimeMillis() - start;
     }
 }
