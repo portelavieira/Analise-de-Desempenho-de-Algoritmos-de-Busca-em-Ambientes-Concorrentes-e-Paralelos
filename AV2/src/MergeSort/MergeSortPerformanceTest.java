@@ -1,4 +1,5 @@
 package MergeSort;
+// MergeSortPerformanceTest.java
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
@@ -8,11 +9,10 @@ public class MergeSortPerformanceTest {
 
     public static void main(String[] args) {
         int[] dataSizes = {1000, 5000, 10000, 50000, 100000}; // Diferentes tamanhos de array para testes
-        int numThreads[] = {1, 2, 4, 8}; // Diferentes números de threads para teste paralelo
         int samples = 5; // Número de amostras por configuração
 
-        try (FileWriter writer = new FileWriter("merge_sort_performance_results.csv")) {
-            writer.write("Data Size,Threads,Sample,Time (ms),Mode\n");
+        try (FileWriter writer = new FileWriter("MergeSort_resultados.csv")) {
+            writer.write("Data Size,Sample,Time (ms),Mode\n");
 
             for (int dataSize : dataSizes) {
                 int[] array = generateRandomArray(dataSize, 1000); // Gera array de teste com valores no intervalo 0-999
@@ -25,23 +25,20 @@ public class MergeSortPerformanceTest {
                     long endTime = System.currentTimeMillis();
                     long duration = endTime - startTime;
 
-                    writer.write(dataSize + ",1," + (i + 1) + "," + duration + ",Serial\n");
+                    writer.write(dataSize + "," + (i + 1) + "," + duration + ",Serial\n");
                 }
 
-                // Teste paralelo
-                for (int threadCount : numThreads) {
-                    for (int i = 0; i < samples; i++) {
-                        int[] arrayCopy = Arrays.copyOf(array, array.length);
-                        long startTime = System.currentTimeMillis();
+                // Teste Fork-Join
+                for (int i = 0; i < samples; i++) {
+                    int[] arrayCopy = Arrays.copyOf(array, array.length);
+                    long startTime = System.currentTimeMillis();
 
-                        ParallelMergeSort mergeSortTask = new ParallelMergeSort(arrayCopy, threadCount);
-                        mergeSortTask.mergeSort();
+                    ParallelMergeSort.mergeSort(arrayCopy); // Executa Merge Sort com Fork-Join
 
-                        long endTime = System.currentTimeMillis();
-                        long duration = endTime - startTime;
+                    long endTime = System.currentTimeMillis();
+                    long duration = endTime - startTime;
 
-                        writer.write(dataSize + "," + threadCount + "," + (i + 1) + "," + duration + ",Parallel\n");
-                    }
+                    writer.write(dataSize + "," + (i + 1) + "," + duration + ",Paralelo\n");
                 }
             }
         } catch (IOException e) {

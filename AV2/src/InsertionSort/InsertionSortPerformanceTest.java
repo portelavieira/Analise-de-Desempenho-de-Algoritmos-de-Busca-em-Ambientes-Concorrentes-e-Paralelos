@@ -11,7 +11,7 @@ public class InsertionSortPerformanceTest {
         int numThreads[] = {1, 2, 4, 8}; // Diferentes números de threads para teste paralelo
         int samples = 5; // Número de amostras por configuração
 
-        try (FileWriter writer = new FileWriter("insertion_sort_performance_results.csv")) {
+        try (FileWriter writer = new FileWriter("InsertionSort_resultados.csv")) {
             writer.write("Data Size,Threads,Sample,Time (ms),Mode\n");
 
             for (int dataSize : dataSizes) {

@@ -39,16 +39,4 @@ public class QuickSort {
         }
         System.out.println();
     }
-
-    // Método principal
-    public static void main(String[] args) {
-        int[] arr = {10, 7, 8, 9, 1, 5}; // Array de teste
-        System.out.println("Array original:");
-        printArray(arr);
-
-        quickSort(arr, 0, arr.length - 1); // Chama o Quick Sort
-
-        System.out.println("Array ordenado:");
-        printArray(arr);
-    }
 }

@@ -1,65 +1,69 @@
 package MergeSort;
+import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.ForkJoinPool;
+
 public class ParallelMergeSort {
-    private int[] arr;
-    private int[] temp;
-    private int numThreads;
-
-    public ParallelMergeSort(int[] arr, int numThreads) {
-        this.arr = arr;
-        this.temp = new int[arr.length];
-        this.numThreads = numThreads;
+    public static void mergeSort(int[] array) {
+        ForkJoinPool pool = new ForkJoinPool(); // Cria um pool de threads ForkJoin
+        pool.invoke(new MergeSortTask(array, 0, array.length - 1)); // Executa a tarefa inicial
+        pool.shutdown();
     }
 
-    public void mergeSort() {
-        parallelMergeSort(0, arr.length - 1, numThreads);
-    }
+    private static class MergeSortTask extends RecursiveAction {
+        private final int[] array;
+        private final int inicio;
+        private final int fim;
 
-    private void parallelMergeSort(int left, int right, int availableThreads) {
-        if (left >= right) return;
-
-        if (availableThreads <= 1) {
-            // Reverte para a versão sequencial se não houver threads disponíveis
-            mergeSortSequential(arr, temp, left, right);
-        } else {
-            int mid = (left + right) / 2;
-            Thread leftThread = new Thread(() -> parallelMergeSort(left, mid, availableThreads / 2));
-            Thread rightThread = new Thread(() -> parallelMergeSort(mid + 1, right, availableThreads / 2));
-
-            leftThread.start();
-            rightThread.start();
-
-            try {
-                leftThread.join();
-                rightThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            merge(arr, temp, left, mid, right);
+        public MergeSortTask(int[] array, int inicio, int fim) {
+            this.array = array;
+            this.inicio = inicio;
+            this.fim = fim;
         }
-    }
 
-    private void mergeSortSequential(int[] arr, int[] temp, int left, int right) {
-        if (left >= right) return;
+        @Override
+        protected void compute() {
+            if (inicio < fim) {
+                int meio = (inicio + fim) / 2; // Calcula o meio do array
 
-        int mid = (left + right) / 2;
-        mergeSortSequential(arr, temp, left, mid);
-        mergeSortSequential(arr, temp, mid + 1, right);
-        merge(arr, temp, left, mid, right);
-    }
+                // Realiza as chamadas recursivas paralelamente (fork)
+                invokeAll(new MergeSortTask(array, inicio, meio),
+                          new MergeSortTask(array, meio + 1, fim));
 
-    private void merge(int[] arr, int[] temp, int left, int mid, int right) {
-        System.arraycopy(arr, left, temp, left, right - left + 1);
-
-        int i = left, j = mid + 1, k = left;
-        while (i <= mid && j <= right) {
-            if (temp[i] <= temp[j]) {
-                arr[k++] = temp[i++];
-            } else {
-                arr[k++] = temp[j++];
+                // Intercala os subvetores ordenados (join)
+                merge(array, inicio, meio, fim);
             }
         }
 
-        while (i <= mid) arr[k++] = temp[i++];
+        private void merge(int[] array, int inicio, int meio, int fim) {
+            int[] temp = new int[fim - inicio + 1];
+            int i = inicio, j = meio + 1, k = 0;
+
+            while (i <= meio && j <= fim) {
+                if (array[i] <= array[j]) {
+                    temp[k++] = array[i++];
+                } else {
+                    temp[k++] = array[j++];
+                }
+            }
+
+            while (i <= meio) temp[k++] = array[i++];
+            while (j <= fim) temp[k++] = array[j++];
+
+            System.arraycopy(temp, 0, array, inicio, temp.length);
+        }
+    }
+
+    // Exemplo de uso
+    public static void main(String[] args) {
+        int[] meuArray = {14, 7, 3, 12, 9, 11, 6, 2};
+        MergeSortTask task = new MergeSortTask(meuArray, 0, meuArray.length - 1);
+        ForkJoinPool pool = new ForkJoinPool();
+        pool.invoke(task); // Executa o Merge Sort paralelamente
+
+        // Exibe o array ordenado
+        System.out.print("Array ordenado: ");
+        for (int num : meuArray) {
+            System.out.print(num + " ");
+        }
     }
 }

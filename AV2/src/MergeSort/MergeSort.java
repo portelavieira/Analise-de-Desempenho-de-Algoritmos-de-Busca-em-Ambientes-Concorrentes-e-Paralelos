@@ -1,4 +1,5 @@
 package MergeSort;
+// MergeSort.java
 public class MergeSort {
     public static void mergeSort(int[] arr) {
         if (arr.length <= 1) return;
