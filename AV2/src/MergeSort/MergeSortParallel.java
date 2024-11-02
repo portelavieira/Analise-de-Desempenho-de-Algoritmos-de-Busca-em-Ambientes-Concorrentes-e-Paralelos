@@ -40,6 +40,6 @@ public class MergeSortParallel extends RecursiveAction {
     public static void sort(int[] array, int numThreads) {
         ForkJoinPool pool = new ForkJoinPool(numThreads); // cria um pool de threads com o número especificado
         pool.invoke(new MergeSortParallel(array, 0, array.length - 1)); // inicia a tarefa de ordenação no pool
-        pool.close();
+        pool.shutdown();
     }
 }

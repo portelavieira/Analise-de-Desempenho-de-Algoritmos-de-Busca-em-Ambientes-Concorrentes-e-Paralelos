@@ -62,6 +62,6 @@ public class InsertionSortParallel extends RecursiveAction {
         ForkJoinPool pool = new ForkJoinPool(threads); // cria um pool de threads com o número de threads especificado
         pool.invoke(new InsertionSortParallel(array, 0, array.length - 1)); // inicia a tarefa de ordenação no pool
         pool.shutdown(); 
-        pool.close(); 
+        pool.shutdown(); 
     }
 }

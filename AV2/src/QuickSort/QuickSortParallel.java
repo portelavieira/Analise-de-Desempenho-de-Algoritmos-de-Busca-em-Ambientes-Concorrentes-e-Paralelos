@@ -46,6 +46,6 @@ public class QuickSortParallel extends RecursiveAction {
     public static void sort(int[] array, int numThreads) { // método para iniciar a ordenação paralela com Quick Sort
         ForkJoinPool pool = new ForkJoinPool(numThreads); // cria um pool de threads com o número especificado
         pool.invoke(new QuickSortParallel(array, 0, array.length - 1)); // inicia a tarefa de ordenação no pool
-        pool.close();
+        pool.shutdown();
     }
 }

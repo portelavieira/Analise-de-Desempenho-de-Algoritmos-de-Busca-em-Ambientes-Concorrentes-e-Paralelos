@@ -62,7 +62,7 @@ public class QuickSortPerformanceTest {
         long start = System.currentTimeMillis();
         pool.invoke(new QuickSortParallel(array, 0, array.length - 1)); // Método paralelo
         pool.shutdown();
-        pool.close();
+        pool.shutdown();
         return System.currentTimeMillis() - start;
     }
 }

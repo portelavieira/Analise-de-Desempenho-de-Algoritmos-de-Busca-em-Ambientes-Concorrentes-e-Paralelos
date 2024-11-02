@@ -33,7 +33,7 @@ public class GraficoDesempenhoSorts extends JPanel {
                 .orElse(1L);
 
         int xScale = (width - 2 * margin) / numSizes;
-        int yScale = (height - 2 * margin) / (int) maxTime;
+        double yScale = (double) (height - 2 * margin) / maxTime;
 
         Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.ORANGE, Color.MAGENTA};
 
@@ -48,10 +48,10 @@ public class GraficoDesempenhoSorts extends JPanel {
                 int barHeight = (int) (time * yScale);
                 g2d.setColor(colors[i % colors.length]);
 
-                g2d.fillRect(x, height - margin - barHeight, xScale / threadCounts.length, barHeight);
-                x += xScale / threadCounts.length;
+                int barWidth = xScale / threadCounts.length;
+                g2d.fillRect(x + i * barWidth, height - margin - barHeight, barWidth, barHeight);
             }
-            x += xScale - (xScale / threadCounts.length) * threadCounts.length;
+            x += xScale;
         }
 
         g2d.setColor(Color.BLACK);
@@ -72,23 +72,14 @@ public class GraficoDesempenhoSorts extends JPanel {
 
         g2d.drawString(titulo, width / 2 - g2d.getFontMetrics().stringWidth(titulo) / 2, margin / 2);
 
-        // Adicionar uma legenda de cores para o número de threads
+        // Adicionar legenda de cores para o número de threads
         int legendY = margin + 30;
-        g2d.setColor(Color.RED);
-        g2d.fillRect(margin, legendY, 15, 15);
-        g2d.drawString("1 Thread (Serial)", margin + 20, legendY + 12);
-
-        g2d.setColor(Color.BLUE);
-        g2d.fillRect(margin, legendY + 20, 15, 15);
-        g2d.drawString("2 Threads", margin + 20, legendY + 32);
-
-        g2d.setColor(Color.GREEN);
-        g2d.fillRect(margin, legendY + 40, 15, 15);
-        g2d.drawString("4 Threads", margin + 20, legendY + 52);
-
-        g2d.setColor(Color.ORANGE);
-        g2d.fillRect(margin, legendY + 60, 15, 15);
-        g2d.drawString("8 Threads", margin + 20, legendY + 72);
+        for (int i = 0; i < threadCounts.length; i++) {
+            g2d.setColor(colors[i % colors.length]);
+            g2d.fillRect(margin, legendY + (i * 20), 15, 15);
+            g2d.setColor(Color.BLACK);
+            g2d.drawString(threadCounts[i] + " Threads", margin + 20, legendY + 12 + (i * 20));
+        }
     }
 
     public static Map<Integer, Map<Integer, Long>> loadDataFromCSV(String filePath) {
@@ -99,11 +90,12 @@ public class GraficoDesempenhoSorts extends JPanel {
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
                 
-                // Ignorar a coluna Execucao (values[0]) e ler o Tamanho, Threads e Tempo (ms)
-                int tamanhoArray = Integer.parseInt(values[1]); // Segunda coluna é o tamanho do array
-                int threads = Integer.parseInt(values[2]);      // Terceira coluna é o número de threads
-                long tempoExecucao = Long.parseLong(values[3]); // Quarta coluna é o tempo de execução
-    
+                if (values.length < 4) continue; // Ignorar linhas incompletas
+                
+                int tamanhoArray = Integer.parseInt(values[1].trim());
+                int threads = Integer.parseInt(values[2].trim());
+                long tempoExecucao = Long.parseLong(values[3].trim());
+
                 data.putIfAbsent(tamanhoArray, new HashMap<>());
                 data.get(tamanhoArray).put(threads, tempoExecucao);
             }
@@ -129,7 +121,7 @@ public class GraficoDesempenhoSorts extends JPanel {
                 "Insertion Sort Performance"
         };
 
-        int[] threadCounts = {1, 2, 4, 8}; // Número de threads usado nos testes
+        int[] threadCounts = {1, 2, 4, 8};
 
         for (int i = 0; i < files.length; i++) {
             Map<Integer, Map<Integer, Long>> data = loadDataFromCSV(files[i]);
