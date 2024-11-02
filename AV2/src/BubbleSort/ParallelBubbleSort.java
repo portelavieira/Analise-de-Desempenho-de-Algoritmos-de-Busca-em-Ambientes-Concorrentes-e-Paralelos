@@ -2,43 +2,40 @@ package BubbleSort;
 import java.util.Arrays;
 
 public class ParallelBubbleSort {
-    private static final int NUM_THREADS = 4; // Número de threads paralelas (representa N-1 nós)
-    
-    public static void parallelBubbleSort(int[] array) throws InterruptedException {
-        int length = array.length;
-        int partSize = length / NUM_THREADS; // Tamanho de cada parte para os threads
-        Thread[] threads = new Thread[NUM_THREADS];
-        int[][] parts = new int[NUM_THREADS][];
-        
-        // Dividir o array em partes e ordenar cada parte em threads separadas
-        for (int i = 0; i < NUM_THREADS; i++) {
-            int start = i * partSize;
-            int end = (i == NUM_THREADS - 1) ? length : start + partSize;
-            parts[i] = Arrays.copyOfRange(array, start, end);
+    private static final int NUM_THREADS = 4; // número de threads paralelas (representa N-1 nós)
 
-            threads[i] = new Thread(new BubbleSortTask(parts[i]));
-            threads[i].start(); // Inicia a ordenação paralela
+    public static void parallelBubbleSort(int[] array) throws InterruptedException { 
+        int length = array.length; //armazena o tamanho da array (parâmetro)
+        int partSize = length / NUM_THREADS; // calcula o tamanho de cada parte a ser ordenada por uma thread
+        Thread[] threads = new Thread[NUM_THREADS]; // cria um array de threads
+        int[][] parts = new int[NUM_THREADS][]; // cria um array de subarrays para cada parte a ser ordenada
+
+        for (int i = 0; i < NUM_THREADS; i++) { // divide o array e cria threads para cada parte
+            int start = i * partSize; // define o índice inicial da parte atual
+            int end = (i == NUM_THREADS - 1) ? length : start + partSize; // define o índice final da parte (última parte pode ser maior)
+            parts[i] = Arrays.copyOfRange(array, start, end); // copia a parte do array original para o subarray
+
+            threads[i] = new Thread(new BubbleSortTask(parts[i])); // cria uma nova thread para ordenar a parte com BubbleSortTask
+            threads[i].start(); // inicia a thread
         }
 
-        // Aguarda todos os threads finalizarem a ordenação de suas partes
-        for (Thread thread : threads) {
+        for (Thread thread : threads) { // espera que todas as threads terminem a execução
             thread.join();
         }
 
-        // Nó 0: fusão global das partes ordenadas
-        mergeParts(array, parts);
+        mergeParts(array, parts); // combina as partes ordenadas em um único array
     }
 
     // Classe que realiza o Bubble Sort em uma parte do array
-    private static class BubbleSortTask implements Runnable {
-        private final int[] array;
+    private static class BubbleSortTask implements Runnable { 
+        private final int[] array; // array que será ordenado pela tarefa
 
         public BubbleSortTask(int[] array) {
             this.array = array;
         }
 
         @Override
-        public void run() {
+        public void run() { 
             bubbleSort(array);
         }
 
@@ -46,40 +43,38 @@ public class ParallelBubbleSort {
             boolean swapped;
             int n = arr.length;
             do {
-                swapped = false;
-                for (int i = 0; i < n - 1; i++) {
-                    if (arr[i] > arr[i + 1]) {
-                        int temp = arr[i];
+                swapped = false; 
+                for (int i = 0; i < n - 1; i++) { // loop para comparar e trocar elementos adjacentes
+                    if (arr[i] > arr[i + 1]) { // verifica se o elemento atual é maior que o próximo
+                        int temp = arr[i]; // troca os elementos
                         arr[i] = arr[i + 1];
                         arr[i + 1] = temp;
-                        swapped = true;
+                        swapped = true; // define swapped como verdadeiro para indicar que houve uma troca
                     }
                 }
-                n--; // Reduz o limite do Bubble Sort
-            } while (swapped);
+                n--; // reduz o tamanho do array para ignorar o último elemento ordenado
+            } while (swapped); // repete até que nenhuma troca ocorra
         }
     }
 
     // Função para realizar a fusão das partes ordenadas no array original
     private static void mergeParts(int[] array, int[][] parts) {
-        int[] indices = new int[parts.length];
-        int arrayIndex = 0;
+        int[] indices = new int[parts.length]; // array de índices para acompanhar a posição em cada subarray
+        int arrayIndex = 0; // índice do array principal para onde os elementos serão mesclados
 
-        while (arrayIndex < array.length) {
-            int minIndex = -1;
-            int minValue = Integer.MAX_VALUE;
+        while (arrayIndex < array.length) { // loop para mesclar todos os elementos nos subarrays
+            int minIndex = -1; // índice do menor valor encontrado nas partes
+            int minValue = Integer.MAX_VALUE; // inicializa minValue com o maior valor possível
 
-            // Encontra o menor valor atual entre as partes
-            for (int i = 0; i < parts.length; i++) {
-                if (indices[i] < parts[i].length && parts[i][indices[i]] < minValue) {
+            for (int i = 0; i < parts.length; i++) { // loop para encontrar o menor valor entre as partes
+                if (indices[i] < parts[i].length && parts[i][indices[i]] < minValue) { // verifica se há elementos restantes e encontra o menor valor
                     minIndex = i;
-                    minValue = parts[i][indices[i]];
+                    minValue = parts[i][indices[i]]; // atualiza o índice e o valor mínimos
                 }
             }
 
-            // Adiciona o menor valor ao array e move o índice da parte correspondente
-            array[arrayIndex++] = minValue;
-            indices[minIndex]++;
+            array[arrayIndex++] = minValue; // coloca o menor valor no array principal
+            indices[minIndex]++; // avança o índice da parte de onde veio o menor valor
         }
     }
 }
