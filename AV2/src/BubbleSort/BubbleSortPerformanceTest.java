@@ -56,7 +56,7 @@ public class BubbleSortPerformanceTest {
 
     private static long medirTempoBubbleSortParalelo(int[] array, int threads) {
         long inicio = System.currentTimeMillis();
-        try {
+        try {   
             ParallelBubbleSort.parallelBubbleSort(array);
         } catch (InterruptedException e) {
             System.err.println("Erro na execução paralela: " + e.getMessage());
